@@ -13,6 +13,22 @@ def get_blueprint():
     return REQUEST_API
 
 
+@REQUEST_API.route('/language', methods=['GET'])
+@cross_origin(supports_credentials=True)
+def language():
+    code = request.values.get('code', '')
+    if not code:
+        response = make_response(render_template('api.txt'))
+        response.headers["Content-Type"] = "text/plain"
+        return response
+    guess = Guess()
+    language = guess.language_name(code)
+
+    response = make_response(language)
+    response.headers["Content-Type"] = "text/plain"
+    return response
+
+
 @REQUEST_API.route('/highlight', methods=['GET'])
 @cross_origin(supports_credentials=True)
 def highlight():
@@ -39,10 +55,8 @@ def highlight():
     style = request.values.get('style', '')
     linenos = request.values.get('linenos', '')
     divstyles = request.form.get('divstyles', get_default_style())
-    guess = Guess()
-    language = guess.language_name(code)
 
-    html = hilite_me(code, language, options, style, linenos, divstyles)
+    html = hilite_me(code, lexer, options, style, linenos, divstyles)
     response = make_response(html)
     response.headers["Content-Type"] = "text/plain"
     return response
